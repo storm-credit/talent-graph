@@ -14,6 +14,18 @@ class SkillLevel(str, Enum):
             self.value
         ]
 
+    def next_level(self) -> "SkillLevel | None":
+        """Return the next higher skill level, or None if already expert."""
+        order = list(SkillLevel)
+        idx = order.index(self)
+        return order[idx + 1] if idx < len(order) - 1 else None
+
+    def prev_level(self) -> "SkillLevel | None":
+        """Return the next lower skill level, or None if already novice."""
+        order = list(SkillLevel)
+        idx = order.index(self)
+        return order[idx - 1] if idx > 0 else None
+
 
 class SkillCategory(str, Enum):
     TECHNICAL = "technical"
@@ -27,6 +39,19 @@ class TraitType(str, Enum):
     MBTI = "mbti"
     COLLABORATION_STYLE = "collaboration_style"
     WORK_PREFERENCE = "work_preference"
+    CULTURE = "culture"
+
+
+class EventType(str, Enum):
+    """Types of random simulation events."""
+
+    MARKET_BOOM = "market_boom"
+    MARKET_DOWNTURN = "market_downturn"
+    REORG = "reorg"
+    CERTIFICATION = "certification"
+    PERSONAL_ISSUE = "personal_issue"
+    MENTORING = "mentoring"
+    PROMOTION_PASSED = "promotion_passed"
 
 
 class OutcomeRating(str, Enum):

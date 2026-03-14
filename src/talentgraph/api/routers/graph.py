@@ -82,6 +82,8 @@ def get_org_graph(engine: SimulationEngine = Depends(get_engine)):
                     "burnout_risk": burnout,
                     "fit_score": fit_score,
                     "skill_count": len(person.skills),
+                    "morale": round(person.morale, 3),
+                    "departed": person.departed,
                 },
             )
         )

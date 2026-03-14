@@ -24,12 +24,17 @@ class PersonSkill(BaseModel):
     skill_id: UUID
     level: SkillLevel
     years_experience: float = 0.0
+    # v0.3: CA/PA system
+    potential_level: SkillLevel | None = None  # max growth ceiling (None = same as level)
+    quarters_active: int = 0  # quarters this skill was exercised
+    quarters_idle: int = 0  # quarters since last used
 
 
 class RoleSkillRequirement(BaseModel):
     skill_id: UUID
     minimum_level: SkillLevel
     weight: float = Field(default=1.0, ge=0.0, le=5.0)
+    critical: bool = False  # if True, missing this skill hard-caps fit score
 
 
 class Trait(BaseModel):
@@ -45,6 +50,7 @@ class Role(BaseModel):
     level: int = Field(ge=1, le=10)
     required_skills: list[RoleSkillRequirement] = []
     description: str = ""
+    max_headcount: int = 0  # 0 = unlimited
 
 
 class Department(BaseModel):
@@ -52,6 +58,7 @@ class Department(BaseModel):
     name: str
     roles: list[UUID] = Field(default_factory=list)
     description: str = ""
+    culture_traits: list[Trait] = Field(default_factory=list)
 
 
 class Outcome(BaseModel):
@@ -77,6 +84,11 @@ class Person(BaseModel):
     traits: list[Trait] = []
     assignments: list[Assignment] = []
     tenure_years: float = 0.0
+    # v0.3: dynamics
+    morale: float = Field(default=0.7, ge=0.0, le=1.0)
+    potential: float = Field(default=0.7, ge=0.0, le=1.0)  # overall growth ceiling
+    learning_rate: float = Field(default=1.0, ge=0.0, le=3.0)  # skill growth speed
+    departed: bool = False  # attrition flag
 
 
 class Company(BaseModel):

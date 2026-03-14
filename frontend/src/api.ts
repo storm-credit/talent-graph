@@ -1,5 +1,6 @@
 import type {
   CompanyOverview,
+  EnhancedModeSettings,
   FitResult,
   GraphResponse,
   PersonDetail,
@@ -61,9 +62,11 @@ export const api = {
   rollback: (steps: number) =>
     post<{ rolled_back_to: string; history_length: number }>(
       "/simulation/rollback",
-      { steps }
+      { steps },
     ),
   resetSimulation: () => post<SimulationStatus>("/simulation/reset"),
+  setEnhancedMode: (settings: EnhancedModeSettings) =>
+    put<SimulationStatus>("/simulation/enhanced", settings),
 
   getGraph: () => get<GraphResponse>("/graph"),
 

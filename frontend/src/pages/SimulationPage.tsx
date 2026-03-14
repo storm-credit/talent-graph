@@ -5,9 +5,71 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, RotateCcw, SkipBack } from "lucide-react";
 import { ratingColor } from "../lib/utils";
 
+function changeIcon(type: string) {
+  switch (type) {
+    case "outcome":
+      return "bg-emerald-500";
+    case "burnout_change":
+      return "bg-amber-500";
+    case "morale_change":
+      return "bg-blue-500";
+    case "skill_growth":
+      return "bg-cyan-500";
+    case "skill_decay":
+      return "bg-orange-500";
+    case "departure":
+      return "bg-red-500";
+    case "event":
+      return "bg-purple-500";
+    case "certification":
+      return "bg-cyan-400";
+    case "mentoring":
+      return "bg-indigo-500";
+    case "personal_event":
+      return "bg-yellow-500";
+    default:
+      return "bg-zinc-500";
+  }
+}
+
+function changeLabel(type: string) {
+  switch (type) {
+    case "outcome":
+      return "Outcome";
+    case "burnout_change":
+      return "Burnout";
+    case "morale_change":
+      return "Morale";
+    case "skill_growth":
+      return "Growth";
+    case "skill_decay":
+      return "Decay";
+    case "departure":
+      return "Departed";
+    case "event":
+      return "Event";
+    case "certification":
+      return "Cert";
+    case "mentoring":
+      return "Mentor";
+    case "personal_event":
+      return "Personal";
+    default:
+      return type;
+  }
+}
+
 export function SimulationPage() {
-  const { status, lastAdvance, allChanges, loading, fetchStatus, advance, rollback, reset } =
-    useSimulationStore();
+  const {
+    status,
+    lastAdvance,
+    allChanges,
+    loading,
+    fetchStatus,
+    advance,
+    rollback,
+    reset,
+  } = useSimulationStore();
   const [animatingChanges, setAnimatingChanges] = useState<ChangeRecord[]>([]);
 
   useEffect(() => {
@@ -21,7 +83,7 @@ export function SimulationPage() {
     for (let i = 0; i < result.changes.length; i++) {
       setTimeout(() => {
         setAnimatingChanges((prev) => [...prev, result.changes[i]]);
-      }, i * 100);
+      }, i * 80);
     }
   };
 
@@ -34,6 +96,9 @@ export function SimulationPage() {
             {status
               ? `Quarter ${status.current_quarter} · ${status.history_length} simulated`
               : "Loading..."}
+            {status?.enhanced_mode && (
+              <span className="ml-2 text-emerald-500">● Enhanced</span>
+            )}
           </p>
         </div>
         <div className="flex gap-2">
@@ -64,6 +129,38 @@ export function SimulationPage() {
         </div>
       </div>
 
+      {/* Stats bar */}
+      {status && (
+        <div className="grid grid-cols-4 gap-3">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3">
+            <p className="text-xs text-zinc-500">Active</p>
+            <p className="text-lg font-bold text-zinc-100">
+              {status.active_people}
+            </p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3">
+            <p className="text-xs text-zinc-500">Departed</p>
+            <p className="text-lg font-bold text-red-400">
+              {status.departed_people}
+            </p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3">
+            <p className="text-xs text-zinc-500">Avg Morale</p>
+            <p
+              className={`text-lg font-bold ${status.average_morale >= 0.7 ? "text-emerald-400" : status.average_morale >= 0.4 ? "text-amber-400" : "text-red-400"}`}
+            >
+              {(status.average_morale * 100).toFixed(0)}%
+            </p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3">
+            <p className="text-xs text-zinc-500">Quarters</p>
+            <p className="text-lg font-bold text-zinc-100">
+              {status.history_length}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Timeline */}
       {status && status.history_length > 0 && (
         <div className="flex items-center gap-1 overflow-x-auto pb-2">
@@ -90,7 +187,7 @@ export function SimulationPage() {
         <div className="px-4 py-3 border-b border-zinc-800">
           <h2 className="text-sm font-semibold text-zinc-300">
             {lastAdvance
-              ? `Changes from ${lastAdvance.quarter}`
+              ? `Changes from ${lastAdvance.quarter} (${animatingChanges.length})`
               : "No simulation run yet"}
           </h2>
         </div>
@@ -106,11 +203,7 @@ export function SimulationPage() {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-2 h-2 rounded-full ${
-                      change.change_type === "outcome"
-                        ? "bg-emerald-500"
-                        : "bg-amber-500"
-                    }`}
+                    className={`w-2 h-2 rounded-full ${changeIcon(change.change_type)}`}
                   />
                   <div>
                     <p className="text-sm text-zinc-200">
@@ -121,24 +214,30 @@ export function SimulationPage() {
                     </p>
                   </div>
                 </div>
-                {change.change_type === "outcome" && change.rating && (
-                  <span
-                    className={`text-xs font-mono font-semibold capitalize ${ratingColor(change.rating)}`}
-                  >
-                    {change.rating}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 capitalize">
+                    {changeLabel(change.change_type)}
                   </span>
-                )}
-                {change.change_type === "burnout_change" && (
-                  <div className="text-xs font-mono text-amber-400">
-                    {change.old_value} → {change.new_value}
-                  </div>
-                )}
+                  {change.change_type === "outcome" && change.rating && (
+                    <span
+                      className={`text-xs font-mono font-semibold capitalize ${ratingColor(change.rating)}`}
+                    >
+                      {change.rating}
+                    </span>
+                  )}
+                  {(change.change_type === "burnout_change" ||
+                    change.change_type === "morale_change") && (
+                    <div className="text-xs font-mono text-amber-400">
+                      {change.old_value} → {change.new_value}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
           {animatingChanges.length === 0 && !lastAdvance && (
             <div className="px-4 py-8 text-center text-zinc-600 text-sm">
-              Click "Advance Quarter" to simulate the next quarter
+              Click &quot;Advance Quarter&quot; to simulate the next quarter
             </div>
           )}
         </div>
@@ -162,7 +261,12 @@ export function SimulationPage() {
                   key={i}
                   className="px-4 py-2 text-xs text-zinc-400 flex justify-between"
                 >
-                  <span>{c.description}</span>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${changeIcon(c.change_type)}`}
+                    />
+                    <span>{c.description}</span>
+                  </div>
                   {c.rating && (
                     <span
                       className={`font-mono capitalize ${ratingColor(c.rating)}`}

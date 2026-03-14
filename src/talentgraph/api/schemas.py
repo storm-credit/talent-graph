@@ -22,6 +22,9 @@ class PersonSummary(BaseModel):
     active_role: str | None
     active_department: str | None
     burnout_risk: float
+    morale: float = 0.7
+    potential: float = 0.7
+    departed: bool = False
 
 
 class DepartmentSummary(BaseModel):
@@ -61,6 +64,9 @@ class SkillInfo(BaseModel):
     category: str
     person_level: str | None = None
     person_years: float | None = None
+    potential_level: str | None = None
+    quarters_active: int = 0
+    quarters_idle: int = 0
     required_level: str | None = None
     weight: float | None = None
 
@@ -73,6 +79,10 @@ class PersonDetail(BaseModel):
     active_role: str | None
     active_department: str | None
     burnout_risk: float
+    morale: float = 0.7
+    potential: float = 0.7
+    learning_rate: float = 1.0
+    departed: bool = False
     fit_results: list[FitResultResponse]
 
 
@@ -124,6 +134,10 @@ class SimulationStatusResponse(BaseModel):
     current_quarter: str
     history_length: int
     people_count: int
+    active_people: int = 0
+    departed_people: int = 0
+    average_morale: float = 0.0
+    enhanced_mode: bool = False
 
 
 # ── Request schemas ──
@@ -143,6 +157,14 @@ class PreviewPlacementRequest(BaseModel):
 
 class RollbackRequest(BaseModel):
     steps: int = 1
+
+
+class EnhancedModeRequest(BaseModel):
+    enhanced: bool = True
+    growth: bool = True
+    morale: bool = True
+    attrition: bool = True
+    events: bool = True
 
 
 # ── Graph schemas ──

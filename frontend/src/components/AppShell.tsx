@@ -45,7 +45,7 @@ export function AppShell() {
           ))}
         </nav>
         <div className="p-3 border-t border-zinc-800 text-xs text-zinc-600">
-          v0.2.0
+          v0.3.0
         </div>
       </aside>
 

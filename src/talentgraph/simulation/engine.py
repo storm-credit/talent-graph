@@ -1,15 +1,20 @@
-"""SimulationEngine: orchestrates quarter advancement, placement, rollback."""
+"""SimulationEngine: orchestrates quarter advancement, placement, rollback.
+
+v0.3: Enhanced mode adds skill growth, morale, attrition, random events.
+"""
 
 from __future__ import annotations
 
 import random
+from dataclasses import dataclass, field
 from uuid import UUID
 
-from talentgraph.ontology.models import Company
+from talentgraph.ontology.models import Company, Person
 from talentgraph.scoring.engine import FitScoreEngine, FitResult
 from talentgraph.scoring.weights import ScoringWeights
 from talentgraph.simulation.events import PlacementEvent
 from talentgraph.simulation.quarter import advance_quarter, place_person
+from talentgraph.simulation.enhanced_quarter import advance_quarter_enhanced
 from talentgraph.simulation.state import (
     ChangeRecord,
     QuarterLabel,
@@ -18,19 +23,36 @@ from talentgraph.simulation.state import (
 )
 
 
+@dataclass
+class SimulationFeatures:
+    """Feature flags for v0.3 enhanced simulation systems."""
+
+    enhanced: bool = False
+    growth: bool = True
+    morale: bool = True
+    attrition: bool = True
+    events: bool = True
+
+
 class SimulationEngine:
-    """Manages simulation state with advance, place, rollback, and reset."""
+    """Manages simulation state with advance, place, rollback, and reset.
+
+    v0.3: Set `features=SimulationFeatures(enhanced=True)` to enable
+    skill growth, morale tracking, attrition, and random events.
+    """
 
     def __init__(
         self,
         company: Company,
         weights: ScoringWeights | None = None,
         seed: int | None = None,
+        features: SimulationFeatures | None = None,
     ) -> None:
         self._weights = weights or ScoringWeights()
         self._state = SimulationState(initial_company=company.model_copy(deep=True))
         self._current_company = company.model_copy(deep=True)
         self._rng = random.Random(seed)
+        self._features = features or SimulationFeatures()
 
     @property
     def state(self) -> SimulationState:
@@ -56,12 +78,36 @@ class SimulationEngine:
     def history(self) -> list[QuarterSnapshot]:
         return self._state.history
 
+    @property
+    def features(self) -> SimulationFeatures:
+        return self._features
+
+    @features.setter
+    def features(self, value: SimulationFeatures) -> None:
+        self._features = value
+
     def advance(self) -> tuple[QuarterLabel, list[ChangeRecord]]:
-        """Advance one quarter. Returns (quarter_label, changes)."""
+        """Advance one quarter. Returns (quarter_label, changes).
+
+        Uses enhanced mode if `features.enhanced` is True.
+        """
         quarter = self._state.current_quarter
-        updated_company, changes = advance_quarter(
-            self._current_company, quarter, self._weights, self._rng
-        )
+
+        if self._features.enhanced:
+            updated_company, changes = advance_quarter_enhanced(
+                self._current_company,
+                quarter,
+                self._weights,
+                self._rng,
+                enable_growth=self._features.growth,
+                enable_morale=self._features.morale,
+                enable_attrition=self._features.attrition,
+                enable_events=self._features.events,
+            )
+        else:
+            updated_company, changes = advance_quarter(
+                self._current_company, quarter, self._weights, self._rng
+            )
 
         snapshot = QuarterSnapshot(
             quarter=quarter,
@@ -128,3 +174,45 @@ class SimulationEngine:
         """Evaluate a person against all roles using current company state."""
         engine = FitScoreEngine(self._current_company, self._weights)
         return engine.evaluate_person(person_id)
+
+    # ── v0.3 convenience methods ──
+
+    def get_active_people(self) -> list[Person]:
+        """Return all non-departed people."""
+        return [p for p in self._current_company.people if not p.departed]
+
+    def get_departed_people(self) -> list[Person]:
+        """Return all departed people."""
+        return [p for p in self._current_company.people if p.departed]
+
+    def get_person(self, person_id: UUID) -> Person | None:
+        """Get a specific person by ID."""
+        for p in self._current_company.people:
+            if p.id == person_id:
+                return p
+        return None
+
+    def get_stats(self) -> dict:
+        """Return summary statistics for the current simulation state."""
+        active = self.get_active_people()
+        departed = self.get_departed_people()
+
+        avg_morale = (
+            sum(p.morale for p in active) / len(active) if active else 0.0
+        )
+        burnout_warnings = sum(
+            1 for p in active if any(
+                a.end_date is None for a in p.assignments
+            ) and p.morale < 0.4
+        )
+
+        return {
+            "total_people": len(self._current_company.people),
+            "active_people": len(active),
+            "departed_people": len(departed),
+            "average_morale": round(avg_morale, 3),
+            "burnout_warnings": burnout_warnings,
+            "quarters_simulated": len(self._state.history),
+            "current_quarter": str(self._state.current_quarter),
+            "enhanced_mode": self._features.enhanced,
+        }

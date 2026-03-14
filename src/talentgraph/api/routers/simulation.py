@@ -1,4 +1,4 @@
-"""Simulation endpoints: advance, place, rollback, reset."""
+"""Simulation endpoints: advance, place, rollback, reset, enhanced mode."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from talentgraph.api.deps import get_engine, reset_engine
 from talentgraph.api.schemas import (
     ChangeResponse,
+    EnhancedModeRequest,
     FitResultResponse,
     OutcomeChangeResponse,
     PlacementRequest,
@@ -17,19 +18,28 @@ from talentgraph.api.schemas import (
     RollbackResponse,
     SimulationStatusResponse,
 )
-from talentgraph.simulation.engine import SimulationEngine
+from talentgraph.simulation.engine import SimulationEngine, SimulationFeatures
 from talentgraph.simulation.state import OutcomeRecord
 
 router = APIRouter(prefix="/api/simulation", tags=["simulation"])
 
 
+def _build_status(engine: SimulationEngine) -> SimulationStatusResponse:
+    stats = engine.get_stats()
+    return SimulationStatusResponse(
+        current_quarter=stats["current_quarter"],
+        history_length=stats["quarters_simulated"],
+        people_count=stats["total_people"],
+        active_people=stats["active_people"],
+        departed_people=stats["departed_people"],
+        average_morale=stats["average_morale"],
+        enhanced_mode=stats["enhanced_mode"],
+    )
+
+
 @router.get("/status", response_model=SimulationStatusResponse)
 def get_status(engine: SimulationEngine = Depends(get_engine)):
-    return SimulationStatusResponse(
-        current_quarter=str(engine.current_quarter),
-        history_length=len(engine.history),
-        people_count=len(engine.company.people),
-    )
+    return _build_status(engine)
 
 
 @router.post("/advance", response_model=QuarterAdvanceResponse)
@@ -113,8 +123,19 @@ def rollback(req: RollbackRequest, engine: SimulationEngine = Depends(get_engine
 @router.post("/reset", response_model=SimulationStatusResponse)
 def reset(engine: SimulationEngine = Depends(get_engine)):
     engine.reset()
-    return SimulationStatusResponse(
-        current_quarter=str(engine.current_quarter),
-        history_length=len(engine.history),
-        people_count=len(engine.company.people),
+    return _build_status(engine)
+
+
+@router.put("/enhanced", response_model=SimulationStatusResponse)
+def set_enhanced_mode(
+    req: EnhancedModeRequest, engine: SimulationEngine = Depends(get_engine)
+):
+    """Toggle enhanced simulation mode and feature flags."""
+    engine.features = SimulationFeatures(
+        enhanced=req.enhanced,
+        growth=req.growth,
+        morale=req.morale,
+        attrition=req.attrition,
+        events=req.events,
     )
+    return _build_status(engine)

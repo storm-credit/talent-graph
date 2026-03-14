@@ -48,6 +48,9 @@ def list_people(engine: SimulationEngine = Depends(get_engine)):
                 active_role=role_title,
                 active_department=dept_name,
                 burnout_risk=round(compute_burnout_risk(p), 3),
+                morale=round(p.morale, 3),
+                potential=round(p.potential, 3),
+                departed=p.departed,
             )
         )
     return result
@@ -71,6 +74,9 @@ def get_person(person_id: UUID, engine: SimulationEngine = Depends(get_engine)):
                 category=skill.category.value if skill else "unknown",
                 person_level=ps.level.value,
                 person_years=ps.years_experience,
+                potential_level=ps.potential_level.value if ps.potential_level else None,
+                quarters_active=ps.quarters_active,
+                quarters_idle=ps.quarters_idle,
             )
         )
 
@@ -85,6 +91,10 @@ def get_person(person_id: UUID, engine: SimulationEngine = Depends(get_engine)):
         active_role=role_title,
         active_department=dept_name,
         burnout_risk=round(compute_burnout_risk(person), 3),
+        morale=round(person.morale, 3),
+        potential=round(person.potential, 3),
+        learning_rate=person.learning_rate,
+        departed=person.departed,
         fit_results=[FitResultResponse(**r.model_dump()) for r in fit_results],
     )
 

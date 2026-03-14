@@ -73,14 +73,20 @@ function mapToFlowNodes(graph: GraphResponse): Node[] {
         if (!person) return;
         const fitScore = person.data.fit_score as number | null;
         const burnout = person.data.burnout_risk as number;
-        const borderColor =
-          fitScore !== null && fitScore !== undefined
+        const morale = person.data.morale as number;
+        const departed = person.data.departed as boolean;
+
+        const borderColor = departed
+          ? "#71717a"
+          : fitScore !== null && fitScore !== undefined
             ? fitScore >= 0.7
               ? "#10b981"
               : fitScore >= 0.4
                 ? "#f59e0b"
                 : "#ef4444"
             : "#52525b";
+
+        const moraleIcon = morale >= 0.7 ? "" : morale >= 0.4 ? " ⚡" : " ⚠";
 
         nodes.push({
           id: person.id,
@@ -89,17 +95,20 @@ function mapToFlowNodes(graph: GraphResponse): Node[] {
             y: 250,
           },
           data: {
-            label: `${person.label}\n${fitScore !== null && fitScore !== undefined ? `Fit: ${(fitScore * 100).toFixed(0)}` : ""}${burnout > 0.3 ? ` · 🔥${(burnout * 100).toFixed(0)}%` : ""}`,
+            label: departed
+              ? `${person.label}\n(departed)`
+              : `${person.label}\n${fitScore !== null && fitScore !== undefined ? `Fit: ${(fitScore * 100).toFixed(0)}` : ""}${burnout > 0.3 ? ` · 🔥${(burnout * 100).toFixed(0)}%` : ""}${moraleIcon}`,
           },
           style: {
-            background: "#18181b",
-            border: `2px solid ${borderColor}`,
+            background: departed ? "#27272a" : "#18181b",
+            border: `2px ${departed ? "dashed" : "solid"} ${borderColor}`,
             borderRadius: 10,
             padding: 8,
-            color: "#e4e4e7",
+            color: departed ? "#71717a" : "#e4e4e7",
             fontSize: 11,
             whiteSpace: "pre-line" as const,
             textAlign: "center" as const,
+            opacity: departed ? 0.5 : 1,
           },
         });
       });

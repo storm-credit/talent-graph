@@ -6,6 +6,9 @@ export interface PersonSummary {
   active_role: string | null;
   active_department: string | null;
   burnout_risk: number;
+  morale: number;
+  potential: number;
+  departed: boolean;
 }
 
 export interface SkillInfo {
@@ -14,6 +17,9 @@ export interface SkillInfo {
   category: string;
   person_level: string | null;
   person_years: number | null;
+  potential_level: string | null;
+  quarters_active: number;
+  quarters_idle: number;
   required_level: string | null;
   weight: number | null;
 }
@@ -42,6 +48,10 @@ export interface PersonDetail {
   active_role: string | null;
   active_department: string | null;
   burnout_risk: number;
+  morale: number;
+  potential: number;
+  learning_rate: number;
+  departed: boolean;
   fit_results: FitResult[];
 }
 
@@ -78,6 +88,10 @@ export interface SimulationStatus {
   current_quarter: string;
   history_length: number;
   people_count: number;
+  active_people: number;
+  departed_people: number;
+  average_morale: number;
+  enhanced_mode: boolean;
 }
 
 export interface ScoringWeights {
@@ -85,6 +99,14 @@ export interface ScoringWeights {
   historical_performance: number;
   level_match: number;
   burnout_risk: number;
+}
+
+export interface EnhancedModeSettings {
+  enhanced: boolean;
+  growth: boolean;
+  morale: boolean;
+  attrition: boolean;
+  events: boolean;
 }
 
 export interface GraphNode {
