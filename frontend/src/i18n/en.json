@@ -1,0 +1,185 @@
+{
+  "app": {
+    "title": "TalentGraph",
+    "subtitle": "Workforce Simulator"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "people": "People",
+    "organization": "Organization",
+    "simulation": "Simulation",
+    "recommendations": "Recommendations",
+    "setup": "Company Setup",
+    "explorer": "Score Explorer",
+    "howItWorks": "How It Works"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "activePeople": "Active People",
+    "departedPeople": "Departed",
+    "avgTenure": "Avg Tenure",
+    "avgBurnout": "Avg Burnout",
+    "avgMorale": "Avg Morale",
+    "skills": "Skills",
+    "teamOverview": "Team Overview",
+    "burnoutWarnings": "Burnout Warnings",
+    "lowMorale": "Low Morale",
+    "departed": "Departed",
+    "morale": "Morale",
+    "burnout": "Burnout",
+    "years": "yr",
+    "scoreHistory": "Company Score Trend",
+    "milestones": "Milestones"
+  },
+  "people": {
+    "title": "People Management",
+    "search": "Search by name...",
+    "tenure": "Tenure",
+    "skills": "Skills",
+    "role": "Role",
+    "department": "Department",
+    "potential": "Potential",
+    "learningRate": "Learning Rate",
+    "currentAbility": "Current Ability (CA)",
+    "potentialAbility": "Potential Ability (PA)",
+    "roleFitScores": "Role Fit Scores",
+    "fitScore": "Fit Score",
+    "predicted": "Predicted",
+    "active": "Active",
+    "idle": "Idle"
+  },
+  "org": {
+    "title": "Organization Chart",
+    "department": "Department",
+    "role": "Role",
+    "person": "Person",
+    "fitScore": "Fit Score"
+  },
+  "simulation": {
+    "title": "Simulation",
+    "currentQuarter": "Current Quarter",
+    "historyLength": "History",
+    "activePeople": "Active",
+    "departed": "Departed",
+    "avgMorale": "Avg Morale",
+    "enhanced": "Enhanced",
+    "advanceQuarter": "Advance Quarter",
+    "rollback": "Rollback",
+    "reset": "Reset",
+    "changes": "Changes",
+    "noChanges": "No changes",
+    "enhancedMode": "Enhanced Mode",
+    "growth": "Skill Growth",
+    "moraleSystem": "Morale System",
+    "attrition": "Attrition",
+    "events": "Random Events"
+  },
+  "explorer": {
+    "title": "Score Explorer",
+    "weights": "Weight Settings",
+    "skillMatch": "Skill Match",
+    "historical": "Historical Performance",
+    "levelMatch": "Level Match",
+    "burnoutRisk": "Burnout Risk"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Learn how TalentGraph algorithms and formulas work",
+    "tabs": {
+      "pipeline": "Pipeline",
+      "formulas": "Formula Reference",
+      "glossary": "Glossary",
+      "tryIt": "Try It"
+    },
+    "pipeline": {
+      "title": "Scoring Pipeline",
+      "description": "TalentGraph calculates person-role fit by weighted sum of 4 components. Click each step for details.",
+      "finalFormula": "Final Formula",
+      "reference": "Based on Schmidt & Hunter (1998) — Personnel selection validity meta-analysis"
+    },
+    "formulas": {
+      "variables": "Variables",
+      "constants": "Constants",
+      "formula": "Formula"
+    },
+    "glossary": {
+      "searchPlaceholder": "Search terms...",
+      "totalTerms": "{{count}} terms total"
+    },
+    "tryIt": {
+      "instruction": "Select a person and role to see the step-by-step score calculation",
+      "selectPerson": "Select Person",
+      "selectRole": "Select Role",
+      "placeholder": "Choose...",
+      "calculating": "Calculating...",
+      "predictedPerf": "Predicted Performance",
+      "finalCalc": "Final Calculation",
+      "noResult": "Could not load breakdown.",
+      "formulaApplied": "Formula Applied"
+    }
+  },
+  "report": {
+    "quarterReport": "Quarter Report",
+    "companyScore": "Company Score",
+    "teamPerf": "Team Perf",
+    "morale": "Morale",
+    "retention": "Retention",
+    "skillCov": "Skill Cov",
+    "growth": "Growth",
+    "headlines": "Key Events",
+    "warnings": "Warnings",
+    "active": "Active",
+    "avgMorale": "Avg Morale",
+    "growthLabel": "Growth",
+    "departures": "Departures",
+    "newMilestones": "New Milestones!",
+    "continue": "Continue"
+  },
+  "recommendations": {
+    "title": "Recommendations",
+    "subtitle": "Find optimal person-role matches",
+    "bestFit": "Best Fit",
+    "matrix": "Placement Matrix",
+    "selectPerson": "Select person",
+    "growthPotential": "Growth Potential",
+    "strengths": "Strengths",
+    "gaps": "Gaps",
+    "noGaps": "No gaps found",
+    "person": "Person"
+  },
+  "setup": {
+    "title": "Company Setup",
+    "subtitle": "Select an industry and size to create a new company",
+    "selectIndustry": "Select Industry",
+    "departments": "Departments",
+    "roles": "Roles",
+    "companySettings": "Company Settings",
+    "companyName": "Company Name",
+    "teamSize": "Team Size",
+    "growthStage": "Growth Stage",
+    "culture": "Culture Type",
+    "preview": "Preview & Create",
+    "create": "Create Company",
+    "stages": {
+      "early": "Early",
+      "growth": "Growth",
+      "mature": "Mature",
+      "enterprise": "Enterprise"
+    },
+    "cultures": {
+      "clan": "Clan (Collaborative)",
+      "adhocracy": "Adhocracy (Innovative)",
+      "market": "Market (Results-driven)",
+      "hierarchy": "Hierarchy (Structured)"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "noData": "No data available",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close"
+  }
+}

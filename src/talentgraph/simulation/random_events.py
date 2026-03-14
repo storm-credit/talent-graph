@@ -10,6 +10,7 @@ import random
 from datetime import date
 from uuid import UUID
 
+from talentgraph.config.simulation_config import EventConfig
 from talentgraph.ontology.enums import EventType, SkillLevel
 from talentgraph.ontology.models import Company, Person
 from talentgraph.simulation.state import ChangeRecord
@@ -48,10 +49,37 @@ class SimulationEvent:
         self.affected_person_name = affected_person_name
 
 
+def _build_company_event_probs(
+    config: EventConfig | None = None,
+) -> dict[EventType, float]:
+    """Build company event probabilities from config or defaults."""
+    if config:
+        return {
+            EventType.MARKET_BOOM: config.market_boom_probability,
+            EventType.MARKET_DOWNTURN: config.market_downturn_probability,
+            EventType.REORG: config.reorg_probability,
+        }
+    return COMPANY_EVENTS
+
+
+def _build_individual_event_probs(
+    config: EventConfig | None = None,
+) -> dict[EventType, float]:
+    """Build individual event probabilities from config or defaults."""
+    if config:
+        return {
+            EventType.CERTIFICATION: config.certification_probability,
+            EventType.PERSONAL_ISSUE: config.personal_issue_probability,
+            EventType.MENTORING: config.mentoring_probability,
+        }
+    return INDIVIDUAL_EVENTS
+
+
 def process_random_events(
     company: Company,
     quarter_date: date,
     rng: random.Random,
+    config: EventConfig | None = None,
 ) -> tuple[list[ChangeRecord], list[SimulationEvent]]:
     """Roll and apply random events. Mutates company in place.
 
@@ -60,20 +88,25 @@ def process_random_events(
     changes: list[ChangeRecord] = []
     events: list[SimulationEvent] = []
 
+    company_probs = _build_company_event_probs(config)
+    individual_probs = _build_individual_event_probs(config)
+
     # ── Company-wide events ──
-    for event_type, prob in COMPANY_EVENTS.items():
+    for event_type, prob in company_probs.items():
         if rng.random() < prob:
-            evt, evt_changes = _apply_company_event(event_type, company, rng)
+            evt, evt_changes = _apply_company_event(
+                event_type, company, rng, config
+            )
             events.append(evt)
             changes.extend(evt_changes)
 
     # ── Individual events ──
     active_people = [p for p in company.people if not p.departed]
     for person in active_people:
-        for event_type, prob in INDIVIDUAL_EVENTS.items():
+        for event_type, prob in individual_probs.items():
             if rng.random() < prob:
                 evt, evt_changes = _apply_individual_event(
-                    event_type, person, company, rng
+                    event_type, person, company, rng, config
                 )
                 events.append(evt)
                 changes.extend(evt_changes)
@@ -82,32 +115,35 @@ def process_random_events(
 
 
 def _apply_company_event(
-    event_type: EventType, company: Company, rng: random.Random
+    event_type: EventType,
+    company: Company,
+    rng: random.Random,
+    config: EventConfig | None = None,
 ) -> tuple[SimulationEvent, list[ChangeRecord]]:
     """Apply a company-wide event."""
     changes: list[ChangeRecord] = []
 
     if event_type == EventType.MARKET_BOOM:
-        # Boosts everyone's morale slightly
+        lo, hi = config.market_boom_morale_range if config else (0.02, 0.06)
         for p in company.people:
             if not p.departed:
-                p.morale = min(1.0, p.morale + rng.uniform(0.02, 0.06))
+                p.morale = min(1.0, p.morale + rng.uniform(lo, hi))
         evt = SimulationEvent(EventType.MARKET_BOOM, "Market boom: industry demand rising")
 
     elif event_type == EventType.MARKET_DOWNTURN:
-        # Reduces morale
+        lo, hi = config.market_downturn_morale_range if config else (0.03, 0.08)
         for p in company.people:
             if not p.departed:
-                p.morale = max(0.0, p.morale - rng.uniform(0.03, 0.08))
+                p.morale = max(0.0, p.morale - rng.uniform(lo, hi))
         evt = SimulationEvent(
             EventType.MARKET_DOWNTURN, "Market downturn: budget pressures rising"
         )
 
     elif event_type == EventType.REORG:
-        # Reorganization: moderate morale hit for everyone
+        lo, hi = config.reorg_morale_range if config else (0.02, 0.05)
         for p in company.people:
             if not p.departed:
-                p.morale = max(0.0, p.morale - rng.uniform(0.02, 0.05))
+                p.morale = max(0.0, p.morale - rng.uniform(lo, hi))
         evt = SimulationEvent(EventType.REORG, "Company reorganization announced")
 
     else:
@@ -130,6 +166,7 @@ def _apply_individual_event(
     person: Person,
     company: Company,
     rng: random.Random,
+    config: EventConfig | None = None,
 ) -> tuple[SimulationEvent, list[ChangeRecord]]:
     """Apply an individual event."""
     changes: list[ChangeRecord] = []
@@ -165,8 +202,8 @@ def _apply_individual_event(
         )
 
     elif event_type == EventType.PERSONAL_ISSUE:
-        # Morale dip
-        person.morale = max(0.0, person.morale - rng.uniform(0.05, 0.15))
+        lo, hi = config.personal_issue_morale_range if config else (0.05, 0.15)
+        person.morale = max(0.0, person.morale - rng.uniform(lo, hi))
         changes.append(
             ChangeRecord(
                 person_id=person.id,
@@ -185,11 +222,12 @@ def _apply_individual_event(
         )
 
     elif event_type == EventType.MENTORING:
-        # Being mentored: morale + skill boost
-        person.morale = min(1.0, person.morale + 0.05)
+        morale_boost = config.mentoring_morale_boost if config else 0.05
+        learning_accel = config.mentoring_learning_acceleration if config else 2
+        person.morale = min(1.0, person.morale + morale_boost)
         if person.skills:
             skill = rng.choice(person.skills)
-            skill.quarters_active += 2  # simulates accelerated learning
+            skill.quarters_active += learning_accel  # simulates accelerated learning
         changes.append(
             ChangeRecord(
                 person_id=person.id,

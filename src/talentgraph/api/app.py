@@ -3,12 +3,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from talentgraph.api.routers import company, graph, people, simulation, weights
+from talentgraph.api.routers import company, company_profile, explainer, game, graph, people, recommendations, simulation, weights
 
 app = FastAPI(
     title="TalentGraph API",
     description="FM-style HR simulation engine API",
-    version="0.2.0",
+    version="0.4.0",
 )
 
 app.add_middleware(
@@ -24,6 +24,10 @@ app.include_router(people.router)
 app.include_router(simulation.router)
 app.include_router(graph.router)
 app.include_router(weights.router)
+app.include_router(explainer.router)
+app.include_router(company_profile.router)
+app.include_router(recommendations.router)
+app.include_router(game.router)
 
 
 @app.get("/api/health")

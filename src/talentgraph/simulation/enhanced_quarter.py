@@ -16,6 +16,7 @@ import random
 from datetime import date
 from uuid import UUID
 
+from talentgraph.config.simulation_config import SimulationConfig
 from talentgraph.ontology.enums import OutcomeRating
 from talentgraph.ontology.models import Assignment, Company, Outcome
 from talentgraph.scoring.burnout import compute_burnout_risk
@@ -44,10 +45,12 @@ def advance_quarter_enhanced(
     enable_morale: bool = True,
     enable_attrition: bool = True,
     enable_events: bool = True,
+    config: SimulationConfig | None = None,
 ) -> tuple[Company, list[ChangeRecord]]:
     """Enhanced quarter advance with all v0.3 systems.
 
     Feature flags allow toggling individual systems.
+    Config is optional; when None, modules use their default constants.
     """
     if rng is None:
         rng = random.Random()
@@ -59,6 +62,11 @@ def advance_quarter_enhanced(
 
     role_lookup = {r.id: r for r in company.roles}
     dept_lookup = {d.id: d for d in company.departments}
+
+    # Resolve enhanced quarter config
+    eq_cfg = config.enhanced_quarter if config else None
+    morale_baseline = eq_cfg.morale_performance_baseline if eq_cfg else 0.5
+    morale_factor = eq_cfg.morale_performance_shift_factor if eq_cfg else 0.5
 
     # Track outcomes for morale system
     recent_outcomes: dict[str, OutcomeRating] = {}
@@ -83,7 +91,7 @@ def advance_quarter_enhanced(
                 continue
 
             # Morale affects outcome distribution: shift bucket
-            morale_shift = (person.morale - 0.5) * 0.5  # -0.25 to +0.25
+            morale_shift = (person.morale - morale_baseline) * morale_factor
             adjusted_perf = result.predicted_performance + morale_shift
             bucket = _performance_bucket(adjusted_perf)
             rating = _sample_outcome(bucket, rng)
@@ -129,24 +137,32 @@ def advance_quarter_enhanced(
 
     # ── Step 2: Skill growth/decay ──
     if enable_growth:
-        growth_changes = process_skill_growth(company, rng)
+        growth_cfg = config.growth if config else None
+        growth_changes = process_skill_growth(company, rng, growth_cfg)
         changes.extend(growth_changes)
 
     # ── Step 3: Morale updates ──
     if enable_morale:
+        morale_cfg = config.morale if config else None
         morale_changes = process_morale(
-            company, quarter_date, recent_outcomes, set(), rng
+            company, quarter_date, recent_outcomes, set(), rng, morale_cfg
         )
         changes.extend(morale_changes)
 
     # ── Step 4: Random events ──
     if enable_events:
-        event_changes, events = process_random_events(company, quarter_date, rng)
+        events_cfg = config.events if config else None
+        event_changes, events = process_random_events(
+            company, quarter_date, rng, events_cfg
+        )
         changes.extend(event_changes)
 
     # ── Step 5: Attrition ──
     if enable_attrition:
-        attrition_changes = process_attrition(company, quarter_date, rng)
+        attrition_cfg = config.attrition if config else None
+        attrition_changes = process_attrition(
+            company, quarter_date, rng, attrition_cfg
+        )
         changes.extend(attrition_changes)
 
     # ── Step 6: Increment tenure ──

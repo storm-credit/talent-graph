@@ -1,4 +1,4 @@
-"""Simulation endpoints: advance, place, rollback, reset, enhanced mode."""
+"""Simulation endpoints: advance, place, rollback, reset, enhanced mode, config."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from talentgraph.api.schemas import (
     RollbackResponse,
     SimulationStatusResponse,
 )
+from talentgraph.config.simulation_config import SimulationConfig
 from talentgraph.simulation.engine import SimulationEngine, SimulationFeatures
 from talentgraph.simulation.state import OutcomeRecord
 
@@ -121,8 +122,8 @@ def rollback(req: RollbackRequest, engine: SimulationEngine = Depends(get_engine
 
 
 @router.post("/reset", response_model=SimulationStatusResponse)
-def reset(engine: SimulationEngine = Depends(get_engine)):
-    engine.reset()
+def reset():
+    engine = reset_engine()
     return _build_status(engine)
 
 
@@ -139,3 +140,34 @@ def set_enhanced_mode(
         events=req.events,
     )
     return _build_status(engine)
+
+
+@router.get("/config")
+def get_config(engine: SimulationEngine = Depends(get_engine)):
+    """Return current simulation config (or defaults if not set)."""
+    cfg = engine.config or SimulationConfig()
+    return cfg.model_dump()
+
+
+@router.put("/config")
+def update_config(
+    body: dict,
+    engine: SimulationEngine = Depends(get_engine),
+):
+    """Update simulation config. Accepts partial updates.
+
+    Only provided sections/fields are updated. Missing fields keep defaults.
+    """
+    current = engine.config or SimulationConfig()
+    current_data = current.model_dump()
+
+    # Merge provided sections into current config
+    for key, value in body.items():
+        if key in current_data and isinstance(value, dict):
+            current_data[key].update(value)
+        else:
+            current_data[key] = value
+
+    updated = SimulationConfig(**current_data)
+    engine.config = updated
+    return updated.model_dump()

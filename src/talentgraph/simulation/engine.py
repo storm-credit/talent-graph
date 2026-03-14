@@ -1,6 +1,7 @@
 """SimulationEngine: orchestrates quarter advancement, placement, rollback.
 
 v0.3: Enhanced mode adds skill growth, morale, attrition, random events.
+v0.4: SimulationConfig for all tunable parameters.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ import random
 from dataclasses import dataclass, field
 from uuid import UUID
 
+from talentgraph.config.simulation_config import SimulationConfig
 from talentgraph.ontology.models import Company, Person
 from talentgraph.scoring.engine import FitScoreEngine, FitResult
 from talentgraph.scoring.weights import ScoringWeights
@@ -39,6 +41,9 @@ class SimulationEngine:
 
     v0.3: Set `features=SimulationFeatures(enhanced=True)` to enable
     skill growth, morale tracking, attrition, and random events.
+
+    v0.4: Pass `config=SimulationConfig(...)` to tune all simulation
+    parameters. When None, modules use their built-in defaults.
     """
 
     def __init__(
@@ -47,12 +52,14 @@ class SimulationEngine:
         weights: ScoringWeights | None = None,
         seed: int | None = None,
         features: SimulationFeatures | None = None,
+        config: SimulationConfig | None = None,
     ) -> None:
         self._weights = weights or ScoringWeights()
         self._state = SimulationState(initial_company=company.model_copy(deep=True))
         self._current_company = company.model_copy(deep=True)
         self._rng = random.Random(seed)
         self._features = features or SimulationFeatures()
+        self._config = config
 
     @property
     def state(self) -> SimulationState:
@@ -86,6 +93,14 @@ class SimulationEngine:
     def features(self, value: SimulationFeatures) -> None:
         self._features = value
 
+    @property
+    def config(self) -> SimulationConfig | None:
+        return self._config
+
+    @config.setter
+    def config(self, value: SimulationConfig | None) -> None:
+        self._config = value
+
     def advance(self) -> tuple[QuarterLabel, list[ChangeRecord]]:
         """Advance one quarter. Returns (quarter_label, changes).
 
@@ -103,6 +118,7 @@ class SimulationEngine:
                 enable_morale=self._features.morale,
                 enable_attrition=self._features.attrition,
                 enable_events=self._features.events,
+                config=self._config,
             )
         else:
             updated_company, changes = advance_quarter(

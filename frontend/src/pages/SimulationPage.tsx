@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSimulationStore } from "../store/simulation";
 import type { ChangeRecord } from "../types";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, RotateCcw, SkipBack } from "lucide-react";
+import { Play, RotateCcw, SkipBack, X } from "lucide-react";
 import { ratingColor } from "../lib/utils";
 
 function changeIcon(type: string) {
@@ -59,45 +60,69 @@ function changeLabel(type: string) {
   }
 }
 
+function scoreColor(score: number): string {
+  if (score >= 80) return "text-emerald-400";
+  if (score >= 60) return "text-amber-400";
+  if (score >= 40) return "text-orange-400";
+  return "text-red-400";
+}
+
 export function SimulationPage() {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+
   const {
     status,
     lastAdvance,
     allChanges,
     loading,
+    showReport,
     fetchStatus,
     advance,
     rollback,
     reset,
+    closeReport,
+    fetchAnalyticsData,
   } = useSimulationStore();
   const [animatingChanges, setAnimatingChanges] = useState<ChangeRecord[]>([]);
 
   useEffect(() => {
     fetchStatus();
+    fetchAnalyticsData();
   }, []);
 
   const handleAdvance = async () => {
-    const result = await advance();
-    // Stagger animation
-    setAnimatingChanges([]);
-    for (let i = 0; i < result.changes.length; i++) {
-      setTimeout(() => {
-        setAnimatingChanges((prev) => [...prev, result.changes[i]]);
-      }, i * 80);
+    try {
+      const result = await advance();
+      // Stagger animation for changes feed
+      setAnimatingChanges([]);
+      for (let i = 0; i < result.changes.length; i++) {
+        setTimeout(() => {
+          setAnimatingChanges((prev) => [...prev, result.changes[i]]);
+        }, i * 80);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
+
+  const report = lastAdvance?.report;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Simulation</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">
+            {t("simulation.title")}
+          </h1>
           <p className="text-sm text-zinc-500">
             {status
-              ? `Quarter ${status.current_quarter} · ${status.history_length} simulated`
-              : "Loading..."}
+              ? `${t("simulation.currentQuarter")} ${status.current_quarter} · ${status.history_length} ${t("simulation.historyLength")}`
+              : t("common.loading")}
             {status?.enhanced_mode && (
-              <span className="ml-2 text-emerald-500">● Enhanced</span>
+              <span className="ml-2 text-emerald-500">
+                ● {t("simulation.enhanced")}
+              </span>
             )}
           </p>
         </div>
@@ -108,7 +133,7 @@ export function SimulationPage() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-800 text-zinc-300 text-sm hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <SkipBack size={14} />
-            Rollback
+            {t("simulation.rollback")}
           </button>
           <button
             onClick={reset}
@@ -116,7 +141,7 @@ export function SimulationPage() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-800 text-zinc-300 text-sm hover:bg-zinc-700 disabled:opacity-30 transition-colors"
           >
             <RotateCcw size={14} />
-            Reset
+            {t("simulation.reset")}
           </button>
           <button
             onClick={handleAdvance}
@@ -124,7 +149,7 @@ export function SimulationPage() {
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 disabled:opacity-50 transition-colors"
           >
             <Play size={14} />
-            {loading ? "Simulating..." : "Advance Quarter"}
+            {loading ? t("common.loading") : t("simulation.advanceQuarter")}
           </button>
         </div>
       </div>
@@ -133,19 +158,25 @@ export function SimulationPage() {
       {status && (
         <div className="grid grid-cols-4 gap-3">
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3">
-            <p className="text-xs text-zinc-500">Active</p>
+            <p className="text-xs text-zinc-500">
+              {t("simulation.activePeople")}
+            </p>
             <p className="text-lg font-bold text-zinc-100">
               {status.active_people}
             </p>
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3">
-            <p className="text-xs text-zinc-500">Departed</p>
+            <p className="text-xs text-zinc-500">
+              {t("simulation.departed")}
+            </p>
             <p className="text-lg font-bold text-red-400">
               {status.departed_people}
             </p>
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3">
-            <p className="text-xs text-zinc-500">Avg Morale</p>
+            <p className="text-xs text-zinc-500">
+              {t("simulation.avgMorale")}
+            </p>
             <p
               className={`text-lg font-bold ${status.average_morale >= 0.7 ? "text-emerald-400" : status.average_morale >= 0.4 ? "text-amber-400" : "text-red-400"}`}
             >
@@ -153,7 +184,9 @@ export function SimulationPage() {
             </p>
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3">
-            <p className="text-xs text-zinc-500">Quarters</p>
+            <p className="text-xs text-zinc-500">
+              {t("simulation.currentQuarter")}
+            </p>
             <p className="text-lg font-bold text-zinc-100">
               {status.history_length}
             </p>
@@ -187,8 +220,8 @@ export function SimulationPage() {
         <div className="px-4 py-3 border-b border-zinc-800">
           <h2 className="text-sm font-semibold text-zinc-300">
             {lastAdvance
-              ? `Changes from ${lastAdvance.quarter} (${animatingChanges.length})`
-              : "No simulation run yet"}
+              ? `${t("simulation.changes")} — ${lastAdvance.quarter} (${animatingChanges.length})`
+              : t("simulation.noChanges")}
           </h2>
         </div>
         <div className="divide-y divide-zinc-800/50 max-h-[500px] overflow-y-auto">
@@ -237,7 +270,7 @@ export function SimulationPage() {
           </AnimatePresence>
           {animatingChanges.length === 0 && !lastAdvance && (
             <div className="px-4 py-8 text-center text-zinc-600 text-sm">
-              Click &quot;Advance Quarter&quot; to simulate the next quarter
+              {t("simulation.noChanges")}
             </div>
           )}
         </div>
@@ -248,7 +281,7 @@ export function SimulationPage() {
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl">
           <div className="px-4 py-3 border-b border-zinc-800">
             <h2 className="text-sm font-semibold text-zinc-300">
-              Full History ({allChanges.length} events)
+              {t("simulation.historyLength")} ({allChanges.length})
             </h2>
           </div>
           <div className="divide-y divide-zinc-800/50 max-h-[300px] overflow-y-auto">
@@ -279,6 +312,216 @@ export function SimulationPage() {
           </div>
         </div>
       )}
+
+      {/* ── Quarter Report Modal ── */}
+      <AnimatePresence>
+        {showReport && report && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+            onClick={closeReport}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 20 }}
+              className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="p-5 border-b border-zinc-800 text-center relative">
+                <button
+                  onClick={closeReport}
+                  className="absolute right-4 top-4 text-zinc-500 hover:text-zinc-300"
+                >
+                  <X size={16} />
+                </button>
+                <p className="text-xs text-zinc-500 uppercase tracking-wider">
+                  {t("report.quarterReport")}
+                </p>
+                <h2 className="text-xl font-bold text-zinc-100 mt-1">
+                  {report.quarter}
+                </h2>
+              </div>
+
+              {/* Company Score */}
+              <div className="px-5 py-4 text-center border-b border-zinc-800">
+                <p className="text-xs text-zinc-500 mb-1">
+                  {t("report.companyScore")}
+                </p>
+                <p
+                  className={`text-4xl font-bold ${scoreColor(report.company_score.total)}`}
+                >
+                  {report.company_score.total}
+                </p>
+                {report.score_delta !== null && (
+                  <p
+                    className={`text-sm mt-1 ${report.score_delta >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                  >
+                    {report.score_delta >= 0 ? "+" : ""}
+                    {report.score_delta}
+                  </p>
+                )}
+                {/* Score breakdown */}
+                <div className="grid grid-cols-5 gap-1 mt-3 text-[10px]">
+                  {[
+                    {
+                      label: t("report.teamPerf"),
+                      val: report.company_score.team_performance,
+                    },
+                    {
+                      label: t("report.morale"),
+                      val: report.company_score.morale_health,
+                    },
+                    {
+                      label: t("report.retention"),
+                      val: report.company_score.retention_rate,
+                    },
+                    {
+                      label: t("report.skillCov"),
+                      val: report.company_score.skill_coverage,
+                    },
+                    {
+                      label: t("report.growth"),
+                      val: report.company_score.growth_rate,
+                    },
+                  ].map(({ label, val }) => (
+                    <div key={label}>
+                      <p className="text-zinc-500">{label}</p>
+                      <p className={`font-mono ${scoreColor(val)}`}>{val}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Headlines */}
+              {report.headlines.length > 0 && (
+                <div className="px-5 py-3 border-b border-zinc-800">
+                  <p className="text-xs text-zinc-500 mb-2">
+                    {t("report.headlines")}
+                  </p>
+                  <div className="space-y-1.5">
+                    {report.headlines.slice(0, 5).map((h, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className={`flex items-center gap-2 text-xs ${
+                          h.category === "positive"
+                            ? "text-emerald-400"
+                            : h.category === "negative"
+                              ? "text-red-400"
+                              : "text-zinc-400"
+                        }`}
+                      >
+                        <span>{h.icon}</span>
+                        <span>{lang === "ko" ? h.text_ko : h.text}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* MVP */}
+              {report.mvp && (
+                <div className="px-5 py-3 border-b border-zinc-800">
+                  <p className="text-xs text-zinc-500 mb-1">🏆 MVP</p>
+                  <p className="text-sm text-amber-400 font-medium">
+                    {lang === "ko"
+                      ? report.mvp.description_ko
+                      : report.mvp.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Warnings */}
+              {report.warnings.length > 0 && (
+                <div className="px-5 py-3 border-b border-zinc-800">
+                  <p className="text-xs text-zinc-500 mb-1">
+                    ⚠️ {t("report.warnings")}
+                  </p>
+                  {report.warnings.map((w, i) => (
+                    <p key={i} className="text-xs text-red-400">
+                      {lang === "ko" ? w.description_ko : w.description}
+                    </p>
+                  ))}
+                </div>
+              )}
+
+              {/* Stats */}
+              <div className="px-5 py-3 border-b border-zinc-800">
+                <div className="grid grid-cols-4 gap-3 text-center text-xs">
+                  <div>
+                    <p className="text-zinc-500">{t("report.active")}</p>
+                    <p className="font-bold text-zinc-200">
+                      {report.total_active}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500">{t("report.avgMorale")}</p>
+                    <p className="font-bold text-zinc-200">
+                      {(report.avg_morale * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500">{t("report.growthLabel")}</p>
+                    <p className="font-bold text-emerald-400">
+                      +{report.growth_events}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500">{t("report.departures")}</p>
+                    <p className="font-bold text-red-400">
+                      {report.departures_this_quarter}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Newly Unlocked Milestones */}
+              {lastAdvance && lastAdvance.newly_unlocked.length > 0 && (
+                <div className="px-5 py-3 border-b border-zinc-800">
+                  <p className="text-xs text-amber-400 mb-2">
+                    🎉 {t("report.newMilestones")}
+                  </p>
+                  {lastAdvance.newly_unlocked.map((a) => (
+                    <motion.div
+                      key={a.id}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-1"
+                    >
+                      <span className="text-lg">{a.icon}</span>
+                      <div>
+                        <p className="text-xs font-medium text-amber-400">
+                          {lang === "ko" ? a.name_ko : a.name}
+                        </p>
+                        <p className="text-[10px] text-zinc-500">
+                          {lang === "ko" ? a.description_ko : a.description}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Continue Button */}
+              <div className="p-4">
+                <button
+                  onClick={closeReport}
+                  className="w-full py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors"
+                >
+                  {t("report.continue")}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

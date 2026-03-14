@@ -12,6 +12,7 @@ from __future__ import annotations
 import random
 from uuid import UUID
 
+from talentgraph.config.simulation_config import GrowthConfig
 from talentgraph.ontology.enums import SkillLevel
 from talentgraph.ontology.models import Company, Person, PersonSkill, Role
 from talentgraph.simulation.state import ChangeRecord
@@ -49,20 +50,32 @@ def _get_role_skill_ids(person: Person, role_lookup: dict[UUID, Role]) -> set[UU
     return {req.skill_id for req in role.required_skills}
 
 
-def _compute_growth_modifier(person: Person) -> float:
+def _compute_growth_modifier(
+    person: Person,
+    config: GrowthConfig | None = None,
+) -> float:
     """Modifier based on learning_rate, morale, and tenure.
 
     Young + high morale → faster growth.
     """
     base = person.learning_rate
 
+    morale_threshold = config.morale_threshold if config else 0.5
+    morale_scale = config.morale_growth_scale if config else 0.6
+    tenure_slowdown = config.tenure_slowdown_years if config else 5.0
+    tenure_rate = config.tenure_slowdown_rate if config else 0.05
+    tenure_floor = config.tenure_min_modifier if config else 0.5
+
     # Morale boost: high morale (0.8+) adds up to 30%
-    morale_mod = 1.0 + max(0.0, (person.morale - 0.5)) * 0.6
+    morale_mod = 1.0 + max(0.0, (person.morale - morale_threshold)) * morale_scale
 
     # Tenure diminishing returns: growth slows after 5 years
     tenure_mod = 1.0
-    if person.tenure_years > 5:
-        tenure_mod = max(0.5, 1.0 - (person.tenure_years - 5) * 0.05)
+    if person.tenure_years > tenure_slowdown:
+        tenure_mod = max(
+            tenure_floor,
+            1.0 - (person.tenure_years - tenure_slowdown) * tenure_rate,
+        )
 
     return base * morale_mod * tenure_mod
 
@@ -70,11 +83,20 @@ def _compute_growth_modifier(person: Person) -> float:
 def process_skill_growth(
     company: Company,
     rng: random.Random,
+    config: GrowthConfig | None = None,
 ) -> list[ChangeRecord]:
     """Process skill growth/decay for all people in the company.
 
     Mutates company in place. Returns change records.
     """
+    # Use config or fall back to module-level constants
+    growth_probs = config.growth_probability_map() if config else GROWTH_PROBABILITY
+    decay_threshold = (
+        config.idle_quarters_before_decay if config else DECAY_IDLE_THRESHOLD
+    )
+    decay_prob = config.decay_probability if config else DECAY_PROBABILITY_PER_QUARTER
+    max_prob = config.max_growth_probability if config else 0.95
+
     role_lookup = {r.id: r for r in company.roles}
     changes: list[ChangeRecord] = []
 
@@ -83,7 +105,7 @@ def process_skill_growth(
             continue
 
         active_skill_ids = _get_role_skill_ids(person, role_lookup)
-        growth_mod = _compute_growth_modifier(person)
+        growth_mod = _compute_growth_modifier(person, config)
 
         for ps in person.skills:
             is_active = ps.skill_id in active_skill_ids
@@ -97,8 +119,8 @@ def process_skill_growth(
                 potential = _get_effective_potential(ps)
                 gap = potential.numeric - ps.level.numeric
                 if gap > 0:
-                    base_prob = GROWTH_PROBABILITY.get(gap, 0.40)
-                    prob = min(0.95, base_prob * growth_mod)
+                    base_prob = growth_probs.get(gap, 0.40)
+                    prob = min(max_prob, base_prob * growth_mod)
                     if rng.random() < prob:
                         old_level = ps.level
                         new_level = ps.level.next_level()
@@ -122,10 +144,10 @@ def process_skill_growth(
 
                 # Decay check
                 if (
-                    ps.quarters_idle >= DECAY_IDLE_THRESHOLD
+                    ps.quarters_idle >= decay_threshold
                     and ps.level != SkillLevel.NOVICE
                 ):
-                    if rng.random() < DECAY_PROBABILITY_PER_QUARTER:
+                    if rng.random() < decay_prob:
                         old_level = ps.level
                         new_level = ps.level.prev_level()
                         if new_level is not None:
