@@ -11,7 +11,8 @@
     "recommendations": "Recommendations",
     "setup": "Company Setup",
     "explorer": "Score Explorer",
-    "howItWorks": "How It Works"
+    "howItWorks": "How It Works",
+    "gameMode": "Game Mode"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -172,6 +173,20 @@
       "market": "Market (Results-driven)",
       "hierarchy": "Hierarchy (Structured)"
     }
+  },
+  "game": {
+    "title": "Game Mode",
+    "subtitle": "Watch the simulation play out like Kairosoft",
+    "currentQuarter": "Current Quarter",
+    "quartersPlayed": "Quarters Played",
+    "events": "Events",
+    "eventLog": "Event Log",
+    "startQuarter": "Start Quarter",
+    "pause": "Pause",
+    "resume": "Resume",
+    "nextQuarter": "Next Quarter",
+    "skip": "Skip",
+    "speed": "Speed"
   },
   "common": {
     "loading": "Loading...",

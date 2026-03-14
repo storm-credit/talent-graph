@@ -11,7 +11,8 @@
     "recommendations": "배치 추천",
     "setup": "회사 설정",
     "explorer": "점수 탐색기",
-    "howItWorks": "작동 원리"
+    "howItWorks": "작동 원리",
+    "gameMode": "게임 모드"
   },
   "dashboard": {
     "title": "대시보드",
@@ -172,6 +173,20 @@
       "market": "성과형 (Market)",
       "hierarchy": "체계형 (Hierarchy)"
     }
+  },
+  "game": {
+    "title": "게임 모드",
+    "subtitle": "카이로소프트처럼 시뮬레이션을 관전하세요",
+    "currentQuarter": "현재 분기",
+    "quartersPlayed": "진행 분기",
+    "events": "이벤트",
+    "eventLog": "이벤트 로그",
+    "startQuarter": "분기 시작",
+    "pause": "일시정지",
+    "resume": "재개",
+    "nextQuarter": "다음 분기",
+    "skip": "건너뛰기",
+    "speed": "속도"
   },
   "common": {
     "loading": "로딩 중...",

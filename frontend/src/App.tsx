@@ -9,6 +9,7 @@ import { ExplorerPage } from "./pages/ExplorerPage";
 import { HowItWorksPage } from "./pages/HowItWorksPage";
 import { RecommendationsPage } from "./pages/RecommendationsPage";
 import { SetupPage } from "./pages/SetupPage";
+import { GameModePage } from "./pages/GameModePage";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/people" element={<PeoplePage />} />
             <Route path="/org" element={<OrgPage />} />
             <Route path="/simulation" element={<SimulationPage />} />
+            <Route path="/game" element={<GameModePage />} />
             <Route path="/recommendations" element={<RecommendationsPage />} />
             <Route path="/setup" element={<SetupPage />} />
             <Route path="/explorer" element={<ExplorerPage />} />

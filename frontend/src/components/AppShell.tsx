@@ -10,6 +10,7 @@ import {
   Globe,
   Target,
   Building2,
+  Gamepad2,
 } from "lucide-react";
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
   { to: "/people", icon: Users, labelKey: "nav.people" },
   { to: "/org", icon: Network, labelKey: "nav.organization" },
   { to: "/simulation", icon: Play, labelKey: "nav.simulation" },
+  { to: "/game", icon: Gamepad2, labelKey: "nav.gameMode" },
   { to: "/recommendations", icon: Target, labelKey: "nav.recommendations" },
   { to: "/setup", icon: Building2, labelKey: "nav.setup" },
   { to: "/explorer", icon: SlidersHorizontal, labelKey: "nav.explorer" },
