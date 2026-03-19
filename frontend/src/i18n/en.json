@@ -12,7 +12,8 @@
     "setup": "Company Setup",
     "explorer": "Score Explorer",
     "howItWorks": "How It Works",
-    "gameMode": "Game Mode"
+    "gameMode": "Game Mode",
+    "projects": "Projects"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -187,6 +188,37 @@
     "nextQuarter": "Next Quarter",
     "skip": "Skip",
     "speed": "Speed"
+  },
+  "projects": {
+    "title": "Project Management",
+    "subtitle": "Objective talent evaluation via project outcomes (Bayesian estimation)",
+    "projects": "Projects",
+    "create": "Create Project",
+    "projectName": "Project Name",
+    "difficulty": "Difficulty",
+    "requiredSkills": "Required Skills",
+    "assignedPeople": "Assigned People",
+    "addPerson": "Add Person",
+    "start": "Start",
+    "end": "End",
+    "selectProject": "Select a project",
+    "empty": "No projects yet. Create a new project."
+  },
+  "scout": {
+    "title": "Scout Report",
+    "confidence": "Confidence",
+    "projectsEvaluated": "projects evaluated",
+    "noData": "No project results yet. Generate initial estimates.",
+    "initialize": "Generate Initial Estimates",
+    "highConf": "High confidence",
+    "medConf": "Medium confidence",
+    "lowConf": "Low confidence"
+  },
+  "import": {
+    "title": "Import Data",
+    "description": "Import employee data from CSV (name, position, department, hire date)",
+    "confirm": "Import",
+    "dragDrop": "Select CSV file"
   },
   "common": {
     "loading": "Loading...",

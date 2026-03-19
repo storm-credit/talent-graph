@@ -32,7 +32,7 @@ class TestTemplateAPI:
             assert "name_en" in item
             assert "name_ko" in item
             assert "description_en" in item
-            assert "skill_count" in item
+            assert "skills" in item
 
     def test_get_template_detail(self, client):
         resp = client.get("/api/company-profile/templates/tech_startup")

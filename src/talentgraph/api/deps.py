@@ -7,9 +7,12 @@ from talentgraph.game.achievements import AchievementTracker
 from talentgraph.scoring.weights import ScoringWeights
 from talentgraph.simulation.engine import SimulationEngine, SimulationFeatures
 
+from talentgraph.estimation.store import EstimationStore
+
 _engine: SimulationEngine | None = None
 _achievement_tracker: AchievementTracker | None = None
 _score_history: list[dict] | None = None
+_estimation_store: EstimationStore | None = None
 
 
 def get_engine() -> SimulationEngine:
@@ -35,9 +38,17 @@ def get_score_history() -> list[dict]:
     return _score_history
 
 
+def get_estimation_store() -> EstimationStore:
+    global _estimation_store
+    if _estimation_store is None:
+        _estimation_store = EstimationStore()
+    return _estimation_store
+
+
 def reset_engine() -> SimulationEngine:
-    global _engine, _achievement_tracker, _score_history
+    global _engine, _achievement_tracker, _score_history, _estimation_store
     _engine = None
     _achievement_tracker = None
     _score_history = None
+    _estimation_store = None
     return get_engine()

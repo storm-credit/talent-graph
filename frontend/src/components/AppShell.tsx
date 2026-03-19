@@ -11,6 +11,7 @@ import {
   Target,
   Building2,
   Gamepad2,
+  FolderKanban,
 } from "lucide-react";
 
 const navItems = [
@@ -19,6 +20,7 @@ const navItems = [
   { to: "/org", icon: Network, labelKey: "nav.organization" },
   { to: "/simulation", icon: Play, labelKey: "nav.simulation" },
   { to: "/game", icon: Gamepad2, labelKey: "nav.gameMode" },
+  { to: "/projects", icon: FolderKanban, labelKey: "nav.projects" },
   { to: "/recommendations", icon: Target, labelKey: "nav.recommendations" },
   { to: "/setup", icon: Building2, labelKey: "nav.setup" },
   { to: "/explorer", icon: SlidersHorizontal, labelKey: "nav.explorer" },

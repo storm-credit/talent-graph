@@ -10,16 +10,20 @@ import type {
   GameAdvanceResponse,
   GlossaryEntry,
   GraphResponse,
+  ImportSummary,
   IndustryTemplate,
   PersonDetail,
   PersonSummary,
   PlacementCell,
   PlacementResponse,
+  Project,
+  ProjectDetail,
   QuarterReport,
   Recommendation,
   ScoreBreakdown,
   ScoreHistoryEntry,
   ScoringWeights,
+  ScoutReport,
   SimulationStatus,
 } from "./types";
 
@@ -117,4 +121,49 @@ export const api = {
     get<IndustryTemplate>(`/company-profile/templates/${industry}`),
   createCompany: (req: CompanyCreateRequest) =>
     post<CompanyOverview>("/company-profile/create", req),
+
+  // Estimation (Bayesian Skill Assessment)
+  getProjects: () => get<Project[]>("/estimation/projects"),
+  getProject: (id: string) => get<ProjectDetail>(`/estimation/projects/${id}`),
+  createProject: (req: {
+    name: string;
+    description?: string;
+    difficulty: number;
+    required_skill_ids: string[];
+    start_date?: string;
+    end_date?: string;
+  }) => post<{ id: string }>("/estimation/projects", req),
+  deleteProject: (id: string) =>
+    fetch(`${BASE}/estimation/projects/${id}`, { method: "DELETE" }).then((r) =>
+      r.json(),
+    ),
+  assignToProject: (projectId: string, personId: string, role: string) =>
+    post(`/estimation/projects/${projectId}/assign`, {
+      person_id: personId,
+      role,
+    }),
+  recordOutcome: (
+    projectId: string,
+    personId: string,
+    result: number,
+    notes?: string,
+  ) =>
+    post(`/estimation/projects/${projectId}/outcome`, {
+      person_id: personId,
+      result,
+      notes: notes || "",
+    }),
+  getScoutReport: (personId: string) =>
+    get<ScoutReport>(`/estimation/people/${personId}/estimates`),
+  initializeEstimates: () => post("/estimation/initialize-all"),
+  importCsv: async (file: File): Promise<ImportSummary> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${BASE}/estimation/import`, {
+      method: "POST",
+      body: form,
+    });
+    if (!res.ok) throw new Error(`Import failed: ${res.status}`);
+    return res.json();
+  },
 };

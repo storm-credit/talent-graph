@@ -4,8 +4,8 @@
     {
       "name": "backend",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "uvicorn", "talentgraph.api.app:app", "--reload", "--port", "8000"],
-      "port": 8000
+      "runtimeArgs": ["-m", "uvicorn", "talentgraph.api.app:app", "--reload", "--port", "8004"],
+      "port": 8004
     },
     {
       "name": "frontend",

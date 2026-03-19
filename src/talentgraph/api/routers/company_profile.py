@@ -28,9 +28,9 @@ def list_templates():
             "description_en": t.description_en,
             "description_ko": t.description_ko,
             "default_culture": t.default_culture.value,
-            "skill_count": len(t.skills),
-            "role_count": len(t.roles),
-            "department_count": len(t.departments),
+            "departments": [d.name for d in t.departments],
+            "roles": [r.title for r in t.roles],
+            "skills": [s.name for s in t.skills],
         }
         for t in templates
     ]

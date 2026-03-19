@@ -347,3 +347,70 @@ export interface CompanyCreateRequest {
   num_people: number;
   seed?: number;
 }
+
+// ── Estimation (Bayesian Skill Assessment) ─────────────────────────
+
+export interface Project {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: number;
+  required_skill_ids: string[];
+  start_date: string;
+  end_date: string | null;
+  status: string;
+  assignment_count?: number;
+  outcome_count?: number;
+}
+
+export interface ProjectDetail extends Project {
+  required_skills: { id: string; name: string }[];
+  assignments: {
+    id: string;
+    person_id: string;
+    person_name: string;
+    role: string;
+  }[];
+  outcomes: {
+    id: string;
+    person_id: string;
+    person_name: string;
+    result: number;
+    result_label: string;
+    evaluated_at: string;
+    notes: string;
+  }[];
+}
+
+export interface SkillEstimate {
+  skill_id: string;
+  skill_name: string;
+  mu: number;
+  sigma: number;
+  confidence: number;
+  discrete_level: number;
+  level_name: string;
+  trend: string;
+  update_count: number;
+  official_level: number | null;
+}
+
+export interface ScoutReport {
+  person_id: string;
+  person_name: string;
+  estimates: SkillEstimate[];
+  avg_confidence: number;
+  total_projects: number;
+}
+
+export interface ImportSummary {
+  imported_count: number;
+  employees: {
+    name: string;
+    position: string;
+    department: string;
+    hire_date: string;
+  }[];
+  errors: string[];
+  warnings: string[];
+}
