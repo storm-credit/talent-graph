@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 
-from talentgraph.api.deps import get_engine, reset_engine
+from talentgraph.api.deps import reset_engine
 from talentgraph.company.factory import (
     build_config_for_profile,
     create_company_from_template,

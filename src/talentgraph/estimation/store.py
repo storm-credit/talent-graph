@@ -79,7 +79,7 @@ class EstimationStore:
         end_date: str | None = None,
         description: str = "",
     ) -> Project:
-        from datetime import date
+        from datetime import date as _date
 
         project = Project(
             id=uuid4(),
@@ -87,8 +87,8 @@ class EstimationStore:
             description=description,
             difficulty=difficulty,
             required_skill_ids=required_skill_ids,
-            start_date=date.fromisoformat(start_date) if start_date else date.today(),
-            end_date=date.fromisoformat(end_date) if end_date else None,
+            start_date=_date.fromisoformat(start_date) if start_date else _date.today(),
+            end_date=_date.fromisoformat(end_date) if end_date else None,
             status=ProjectStatus.PLANNED,
         )
         self.projects[project.id] = project

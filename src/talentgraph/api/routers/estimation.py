@@ -193,7 +193,11 @@ def assign_person(
     )
     if not assignment:
         raise HTTPException(404, "Project not found")
-    return {"id": str(assignment.id), "person_id": req.person_id, "role": assignment.role_in_project.value}
+    return {
+        "id": str(assignment.id),
+        "person_id": req.person_id,
+        "role": assignment.role_in_project.value,
+    }
 
 
 @router.post("/projects/{project_id}/outcome")

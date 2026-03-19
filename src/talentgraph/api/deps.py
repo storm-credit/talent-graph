@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from talentgraph.data.seed import create_sample_company
 from talentgraph.game.achievements import AchievementTracker
-from talentgraph.scoring.weights import ScoringWeights
 from talentgraph.simulation.engine import SimulationEngine, SimulationFeatures
 
 from talentgraph.estimation.store import EstimationStore

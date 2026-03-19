@@ -6,10 +6,6 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from talentgraph.ontology.enums import OutcomeRating
-from talentgraph.scoring.weights import ScoringWeights
-from talentgraph.simulation.state import QuarterLabel
-
 
 # ── Response schemas ──
 

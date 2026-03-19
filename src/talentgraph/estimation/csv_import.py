@@ -9,7 +9,6 @@ from __future__ import annotations
 import csv
 import io
 from datetime import date
-from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -133,11 +132,11 @@ def _map_columns(fieldnames: list[str]) -> dict[str, str] | None:
 
 def _parse_date(s: str) -> date:
     """Parse various date formats."""
-    # Try common formats
+    from datetime import datetime as _dt
+
     for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%Y.%m.%d", "%m/%d/%Y", "%d/%m/%Y"):
         try:
-            from datetime import datetime
-            return datetime.strptime(s, fmt).date()
+            return _dt.strptime(s, fmt).date()
         except ValueError:
             continue
     raise ValueError(f"날짜 형식을 인식할 수 없습니다: {s}")
