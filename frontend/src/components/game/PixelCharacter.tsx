@@ -30,29 +30,29 @@ export function PixelCharacter({
   const moodAnimation = {
     working: {
       y: [0, -1 * s, 0],
-      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+      transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" as const },
     },
     happy: {
       y: [0, -3 * s, 0],
-      transition: { duration: 0.4, repeat: Infinity, ease: "easeOut" },
+      transition: { duration: 0.4, repeat: Infinity, ease: "easeOut" as const },
     },
     stressed: {
       x: [-1, 1, -1, 0],
-      transition: { duration: 0.3, repeat: Infinity, ease: "linear" },
+      transition: { duration: 0.3, repeat: Infinity, ease: "linear" as const },
     },
     burnout: {
       rotate: [0, -5, 5, 0],
-      transition: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+      transition: { duration: 2, repeat: Infinity, ease: "easeInOut" as const },
     },
     departing: {
       x: [0, 60],
       opacity: [1, 0],
-      transition: { duration: 1.2, ease: "easeIn" },
+      transition: { duration: 1.2, ease: "easeIn" as const },
     },
     celebrating: {
       y: [0, -4 * s, 0],
       rotate: [0, 10, -10, 0],
-      transition: { duration: 0.5, repeat: 3, ease: "easeOut" },
+      transition: { duration: 0.5, repeat: 3, ease: "easeOut" as const },
     },
   };
 
